@@ -10,7 +10,7 @@ Besides, we will also cover ShuffleNets, which bring many creative and valuable 
 
 In 2017, Google proposed the first generation MobileNet: [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861). It introduces a new type of convolution, namely  ***Depthwise Separable Convolution***. 
 
-![img](./Evolution of MobileNets (and ShuffleNets).assets/v2-e6ef5e7b681a549831d98d094fb3d1c0_720w.jpg)
+![img](./Evolution of MobileNets (and ShuffleNets).assets/v2-e6ef5e7b681a549831d98d094fb3d1c0_720w.jpg?raw=true)
 
 As we can see from the figure, its computation cost equals: 
 $$
@@ -27,9 +27,9 @@ Ratio=  C_{out} + K * K
 $$
 Normally $K=3\ or \ 5$, but $C_{out}$ could be much bigger, a significant speedup in convolutions!  With this, we can build rather efficient blocks and stack them to be **MobileNetV1**.
 
-![image-20200226225133725](./Evolution of MobileNets (and ShuffleNets).assets/image-20200226225133725.png)
+![image-20200226225133725](Evolution of MobileNets (and ShuffleNets).assets/image-20200226225133725.png)
 
-![image-20200226233846220](./Evolution of MobileNets (and ShuffleNets).assets/image-20200226233846220.png)
+![image-20200226233846220](Evolution of MobileNets (and ShuffleNets).assets/image-20200226233846220.png?raw=true)
 
 In addition,  two useful hyperparameters were also introduced:  ***Width Multiplier* $\alpha$** and ***Resolution Multiplier* $\rho$**. The former mainly control ***the number of output channels***, and the latter is to reduce ***input images' sizes*** (224, 192, 160...).
 
