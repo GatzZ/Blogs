@@ -27,7 +27,7 @@ Ratio=  C_{out} + K * K
 $$
 Normally $K=3\ or \ 5$, but $C_{out}$ could be much bigger, a significant speedup in convolutions!  With this, we can build rather efficient blocks and stack them to be **MobileNetV1**.
 
-![image-20200226225133725](Evolution of MobileNets (and ShuffleNets).assets/image-20200226225133725.png)
+![image-20200226225133725](../Evolution of MobileNets (and ShuffleNets).assets/image-20200226225133725.png)
 
 ![image-20200226233846220](Evolution of MobileNets (and ShuffleNets).assets/image-20200226233846220.png?raw=true)
 
