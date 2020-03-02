@@ -8,7 +8,7 @@ Besides, we will also cover ShuffleNets, which bring many creative and valuable 
 
 ## MobileNetV1
 
-In 2017, Google proposed the first generation MobileNet: [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861). It introduces a new type of convolution, namely  ***Depthwise Separable Convolution***. 
+In 2017, Google proposed the first generation MobileNet: [MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861). It introduces a new type of convolution named  ***depthwise separable convolution***. 
 
 ![img](./Evolution of MobileNets (and ShuffleNets).assets/v2-e6ef5e7b681a549831d98d094fb3d1c0_720w.jpg?raw=true)
 
@@ -17,7 +17,7 @@ $$
 DepthwiseSeparableConv=DepthwiseConv+ PointwiseConv \\
 = (N*N*K*K*C_{in}) + (N*N*C_{in}*C_{out})
 $$
-compared with ***Standard Convolution***'s': 
+compared with standard convolutions': 
 $$
 StandardConv = N*N*K*K*C_{in}* C_{out} \\
 $$
@@ -25,36 +25,34 @@ and the ratio is:
 $$
 Ratio=  C_{out} + K * K
 $$
-Normally $K=3\ or \ 5$, but $C_{out}$ could be much bigger, a significant speedup in convolutions!  With this, we can build rather efficient blocks and stack them to be **MobileNetV1**.
+Normally $K=3\ or \ 5$, but $C_{out}$ could be much bigger, a significant speedup in convolutions!  With this, we can build rather efficient blocks and stack them together.
 
 <img src="Evolution of MobileNets (and ShuffleNets).assets/image-20200226225133725.png" alt="image-20200226225133725" style="zoom: 67%;" />
 
 <img src="Evolution of MobileNets (and ShuffleNets).assets/image-20200226233846220.png" alt="image-20200226233846220" style="zoom: 67%;" />
 
-In addition,  two useful hyperparameters were also introduced:  ***Width Multiplier* $\alpha$** and ***Resolution Multiplier* $\rho$**. The former mainly control ***the number of output channels***, and the latter is to reduce ***input images' sizes*** (224, 192, 160...).
+In addition,  two useful hyper-parameters were also introduced:  *Width Multiplier* $\alpha$ and *Resolution Multiplier* $\rho$. The former mainly control the number of output channels, and the latter is to reduce input images' sizes (224, 192, 160...).
 
 
 
 ## ShuffleNetV1
 
 
-A few months later, Face++ introduced another efficient network [ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices](https://arxiv.org/abs/1707.01083), which employs two novel operations, ***Channel Shuffle*** and  ***Pointwise Group Convolution***, and it  outperforms **MobileNetV1** on *ImageNet classification task*.
+A few months later, Face++ introduced another efficient network [ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices](https://arxiv.org/abs/1707.01083), which employs two novel operations, ***channel shuffle*** and  ***pointwise group convolution***, and it  out performs MobileNetV1 on ImageNet classification task.
 
-The metric issue must be emphasized. At that time, we were using indiect metrics (e.g. ***MFLOPs, MAdds***) to measure computational cost, not using direct metric ***Speed***.  As you can imagine, some operations' costs may be **<u>underestimated</u>**, like ***Channel Shuffle*** (extra overheads in memory copy) . 
+The metric issue must be emphasized. At that time, we were using indiect metrics (e.g. $MFLOPs$, $MAdds$) to measure computational cost, not using direct metric $speed$.  As you can imagine, some operations' costs may be <u>underestimated</u>, like *Channel Shuffle* (extra overheads in memory copy) . 
 
 ![1582796198030](./Evolution of MobileNets (and ShuffleNets).assets/1582796198030.png)
 
-For ***Group Gonvolution***, the authors split channels into different groups, then do convolutions separately. ***Channel Shuffle*** is the bridge across convolution groups,  making it possible to utilize information from other groups (emmm... just sounds reasonable).
+For *group convolution*, the authors split channels into different groups, then do convolutions separately. *channel shuffle* is the bridge across convolution groups,  making it possible to utilize information from other groups (emmm... just sounds reasonable).
 
 ![1582798068150](./Evolution of MobileNets (and ShuffleNets).assets/1582798068150.png)
 
-There are two types of Units for different ***Stride*** (b=1 or c=2), and they are quite similar to **ResNet Units**. We can stack them to be an efficient network.
+There are two types of units for different $stride(=1\  or\  2)$, and they are quite similar to **ResNet units**. We can stack them to be an efficient network.
 
 ![1582798916272](./Evolution of MobileNets (and ShuffleNets).assets/1582798916272.png)
 
-We should also note that ***Channel Shuffle*** is not a built-in operation in many frameworks, so you may need to combine ***Slice*** and ***Gather*** operations to mimic it, and be aware of its cost. 
-
-
+We should also note that *Channel Shuffle* is not a built-in operation in many frameworks, so you may need to combine *slice* and *gather* operations to mimic it, and be aware of its cost. 
 
 ## MobileNetV2
 
@@ -68,7 +66,7 @@ Why shouldn't use non-linearities in narrow layers?  Let's discuss *ReLU* to get
 2. In wide layers,  they should have redundant  information from sources,  so the removal of negative parts won't hurt them too much.
 3. As the above figure shows, once a 2D spiral is projected and  activated by *ReLU* , we can hardly reconstruct it from low-dimensional spaces.
 
-The classical **Residual blocks** use bottleneck layers to capture compact features (may contain all the necessary information),  while **Inverted Residuals** use expansion layers to produce higher-dimensional features (*no activations*, no hurt), then use **Depthwide Convolutions** followed *ReLU*, to prevent *ReLU* from destroying too much source's information. According to the paper, the expansion factor $t=6$ except in the first bottleneck.
+The classical *residual blocks* use bottleneck layers to capture compact features (may contain all the necessary information),  while *inverted residuals* use expansion layers to produce higher-dimensional features (*no activations*, no hurt), then use *depthwide convolution* followed *ReLU*, to prevent *ReLU* from destroying too much source's information. According to the paper, the expansion factor $t=6$ except in the first bottleneck.
 
 ![1582881738599](./Evolution of MobileNets (and ShuffleNets).assets/1582881738599.png)
 
@@ -122,9 +120,9 @@ and therefore given certain $B$, $MAC$ reaches the minimum when $c_1 = c_2$.
 
 > **G2) Excessive group convolution increases MAC**
 
-**Group convolution** is  a common way to reduce $FLOPs$ while convoluting feature maps (e.g., **depthwise convolution**). But when given a certain $FLOPs$, as the number of groups $g$ going up,  $MAC$ increases.
+*Group convolution* is  a common way to reduce $FLOPs$ while convoluting feature maps (e.g., *depthwise convolution*). But when given a certain $FLOPs$, as the number of groups $g$ going up,  $MAC$ increases.
 
-Now we focus on $1 \times 1$ **group convolution**,  
+Now we focus on $1 \times 1$ *group convolution*,  
 $$
 B = \frac{hwc_1c_2}{g}
 $$
@@ -135,11 +133,13 @@ MAC &= hwc_1 + hwc_2 + \frac{c_1c_2}{g} \\
 &= hwc_1 + \frac{Bg}{c_1} + \frac{B}{hw} \\
 \end{align}
 $$
+
 ![image-20200229162743298](Evolution of MobileNets (and ShuffleNets).assets/image-20200229162743298.png)
----
+
+-----
 > **G3) Network fragmentation reduces degree of parallelism**
 
-This is so understandable. **Multi-path** is a common technique to generate different types of features and improve accuracy. On the other hand, compared with "one big operation", using "one set of separating operations" will surely introduce extra overheads such as synchronization, like **group convolution**. It may slow down strong parallel computing devices like GPUs.
+This is so understandable. **Multi-path** is a common technique to generate different types of features and improve accuracy. On the other hand, compared with "one big operation", using "one set of separating operations" will surely introduce extra overheads such as synchronization, like *group convolutio**. It may slow down strong parallel computing devices like GPUs.
 
 ![image-20200229170702941](Evolution of MobileNets (and ShuffleNets).assets/image-20200229170702941.png)
 
@@ -147,7 +147,7 @@ This is so understandable. **Multi-path** is a common technique to generate diff
 
 > **G4) Element-wise operations are non-negligible**
 
- The element-wise operators have small FLOPs but relatively heavy MAC, e.g., *ReLU*, *AddTensor*, *AddBias*. Specially, the authors also consider **depthwise convolution** as a element-wise operator because of the  high $MAC/FLOPs$ ratio.
+ The element-wise operators have small $FLOPs$ but relatively heavy $MAC$, e.g., *ReLU*, *AddTensor*, *AddBias*. Specially, the authors also consider *depthwise convolution* as a element-wise operator because of the  high $MAC/FLOPs$ ratio.
 
 ![image-20200229171253171](Evolution of MobileNets (and ShuffleNets).assets/image-20200229171253171.png)
 
@@ -159,22 +159,24 @@ This is so understandable. **Multi-path** is a common technique to generate diff
 
 ---
 
-Let's consider building units. The guidelines are only beneficial for efficiency, but the capacity of models is equally important. **ShuffleNetV1** has been proven as a efficient model. Therefore, we use it as the base-model,  and try to improve it within our guidelines. 
+Let's consider building units. The guidelines are only beneficial for efficiency, but the capacity of models is equally important. ShuffleNetV1 has been proven as a efficient model. Therefore, we use it as the base-model,  and try to improve it within our guidelines. 
 
-1. Following G1,  **ShuffleNetV1** has **bottlenecks** (such as 256-d -> 64-d -> 256-d) in right branches, so we remove these bottlenecks by changing $1 \times 1 \ GConv \ (c_{in} \ne c_{out}) $ to $1 \times 1 \ GConv \ (c_{in} = c_{out})$. 
-2. Following G2, we change $1 \times 1 \ GConv$ to $1 \times 1 \ Conv$, then **channel shuffle** in the right branch will not exchange extra information, thus move it to the bottom.
-3. Following G3, $1 \times 1 \ GConv$ should also be blamed and keep the number of branches low ($=2$).
-4. Following G4, replace *Add*​ with *Concat* while merging the two branches.
+1. Following G1,  ShuffleNetV1 has bottlenecks (such as 256-d -> 64-d -> 256-d) , so we remove these bottlenecks by changing all $1 \times 1 \ GConv (c_{in} \ne c_{out}) $ to $1 \times 1 \ GConv \ (c_{in} = c_{out})$. 
+2. Following G2, we further change $1 \times 1 \ GConv \ (c_{in} = c_{out})$ to  $1 \times 1 \ Conv \ (c_{in} = c_{out})$, making *channel shuffle* will not exchange extra information, thus move it to the bottom.
+3. Following G3, the raw $1 \times 1 \ GConv$ should be blamed again. Meanwhile, we shall keep the number of branches low ($=2$).
+4. Following G4, replace *add* with *concat* while merging the two branches.
 
-Now, we are facing a contradiction that the number of output channels is larger than that of input channels in the units. To fix it, a simple operator called **channel split** was introduced, which equally split input channels to two branches.  Nevertheless, while doing spatial down sampling, **channel split** is removed, cause we need to double the number of output channels.
+Now, we are facing a contradiction that the number of output channels is larger than that of input channels in the units. To fix it, a simple operator called *channel split* was introduced, which equally split input channels to two branches.  Nevertheless, while doing spatial down sampling, *channel split* is removed in order to double the number of output channels.
 
-Also, the three successive element-wise operations, **Concat, Channel Shuffle and Channel Split** , can be  merged into a single element-wise operation. 
+Also, the three successive element-wise operations, *concat*, *channel shuffle* and *channel split* , can be  merged into a single element-wise operation. 
 
 <img src="Evolution of MobileNets (and ShuffleNets).assets/image-20200229173424082.png" alt="image-20200229173424082" style="zoom:67%;" />
 
 <img src="Evolution of MobileNets (and ShuffleNets).assets/image-20200229173955686.png" alt="image-20200229173955686" style="zoom:67%;" />
 
-## MobileNetV3
 
+
+
+## MobileNetV3
 [Searching for MobileNetV3](https://arxiv.org/abs/1905.02244)
 
