@@ -82,15 +82,16 @@ Still, the structures:
 
 In the middle of 2018, Face++ and THU upgraded ShuffleNetV1 to [ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design](https://arxiv.org/abs/1807.11164). The paper is very detailed and practical, which derive several guidelines for efficient network architecture design and shows impressive experimental results.
 
-Prior to ShuffleNetV2, most works only consider *FLOPs* or *MAdds*. However, in engineering,  ***memory access cost (MAC)***  and ***degree of parallelism*** also contribute to our final inference time. For example, in (c) and (d) networks with similar $FLOPs$ have different $speeds$.
+Prior to ShuffleNetV2, most works only consider $FLOPs$ or $MAdds$. However, in engineering,  ***memory access cost (MAC)***  and ***degree of parallelism*** also contribute to our final inference time. For example, in (c) and (d) networks with similar $FLOPs$ have different $speeds$.
 
 ![image-20200229122751852](Evolution of MobileNets (and ShuffleNets).assets/image-20200229122751852.png)
 
 Let's set up our parameters before discussing guidelines. $c_1 = $ the number of input channels, $c_2 = $ the number of input channels,  $h=$ height of the feature map, $w$ = width of the feature map.
 
+--------
 > **G1) Equal channel width minimizes memory access cost (MAC)**
 
-For simplicity, we just consider the $1 \times 1$ convolution. The computational cost (FLOPs): 
+For simplicity, we just consider the $1 \times 1$ convolution. The computational cost ($FLOPs$): 
 $$
 B = hwc_1c_2
 $$
@@ -117,11 +118,11 @@ and therefore given certain $B$, $MAC$ reaches the minimum when $c_1 = c_2$.
 
 ![image-20200229154601324](Evolution of MobileNets (and ShuffleNets).assets/image-20200229154601324.png)
 
-
+---------
 
 > **G2) Excessive group convolution increases MAC**
 
-**Group convolution** is  a common way to reduce *FLOPs* while convoluting feature maps (e.g., **depthwise convolution**). But when given a certain *FLOPs*, as the number of groups $g$ going up,  $MAC$ increases.
+**Group convolution** is  a common way to reduce $FLOPs$ while convoluting feature maps (e.g., **depthwise convolution**). But when given a certain $FLOPs$, as the number of groups $g$ going up,  $MAC$ increases.
 
 Now we focus on $1 \times 1$ **group convolution**,  
 $$
@@ -135,12 +136,14 @@ MAC &= hwc_1 + hwc_2 + \frac{c_1c_2}{g} \\
 \end{align}
 $$
 ![image-20200229162743298](Evolution of MobileNets (and ShuffleNets).assets/image-20200229162743298.png)
-
+---
 > **G3) Network fragmentation reduces degree of parallelism**
 
-This is so understandable. "Multi-path" is a common technique to generate different types of features and improve accuracy. On the other hand, compared with "one big operation", using "one set of separating operations" will surely introduce extra overheads such as synchronization. It may slow down strong parallel computing devices like GPUs.
+This is so understandable. **Multi-path** is a common technique to generate different types of features and improve accuracy. On the other hand, compared with "one big operation", using "one set of separating operations" will surely introduce extra overheads such as synchronization, like **group convolution**. It may slow down strong parallel computing devices like GPUs.
 
 ![image-20200229170702941](Evolution of MobileNets (and ShuffleNets).assets/image-20200229170702941.png)
+
+---
 
 > **G4) Element-wise operations are non-negligible**
 
@@ -151,16 +154,25 @@ This is so understandable. "Multi-path" is a common technique to generate differ
 > **Conclusion**
 1. Use "balanced" convolutions (equal channel width); Base case: ShuffleNetV1 and MobileNetV2
 2. Be aware of the cost of using group convolution; Base case: ShuffleNetV1
-3. Reduce the degree of fragmentation; Base case: Inception Nets
+3. Reduce the degree of fragmentation; Base case: Inception Series and ShuffleNetV1
 4. Reduce element-wise operations; Base case: MobileNetV2
 
-To increase the number of channels without significantly increasing $FLOPs$, point-wise group convolutions and bottleneck-like structures are widely adopted. In order to achieve high model capacity and efficiency, the key issue is <u>how to maintain a large number and equally wide channels with neither dense convolution nor too many groups</u>. Towards above purpose, a simple operator called **channel split** was introduced.  Also, the three successive element-wise operations, **Concat, Channel Shuffle and Channel Split** , can be  merged into a single element-wise operation. 
+---
+
+Let's consider building units. The guidelines are only beneficial for efficiency, but the capacity of models is equally important. **ShuffleNetV1** has been proven as a efficient model. Therefore, we use it as the base-model,  and try to improve it within our guidelines. 
+
+1. Following G1,  **ShuffleNetV1** has **bottlenecks** (such as 256-d -> 64-d -> 256-d) in right branches, so we remove these bottlenecks by changing $1 \times 1 \ GConv \ (c_{in} \ne c_{out}) $ to $1 \times 1 \ GConv \ (c_{in} = c_{out})$. 
+2. Following G2, we change $1 \times 1 \ GConv$ to $1 \times 1 \ Conv$, then **channel shuffle** in the right branch will not exchange extra information, thus move it to the bottom.
+3. Following G3, $1 \times 1 \ GConv$ should also be blamed and keep the number of branches low ($=2$).
+4. Following G4, replace *Add*​ with *Concat* while merging the two branches.
+
+Now, we are facing a contradiction that the number of output channels is larger than that of input channels in the units. To fix it, a simple operator called **channel split** was introduced, which equally split input channels to two branches.  Nevertheless, while doing spatial down sampling, **channel split** is removed, cause we need to double the number of output channels.
+
+Also, the three successive element-wise operations, **Concat, Channel Shuffle and Channel Split** , can be  merged into a single element-wise operation. 
 
 <img src="Evolution of MobileNets (and ShuffleNets).assets/image-20200229173424082.png" alt="image-20200229173424082" style="zoom:67%;" />
 
 <img src="Evolution of MobileNets (and ShuffleNets).assets/image-20200229173955686.png" alt="image-20200229173955686" style="zoom:67%;" />
-
-
 
 ## MobileNetV3
 
