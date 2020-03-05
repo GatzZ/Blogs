@@ -235,11 +235,12 @@ For layer-wise search, we modify this **NetAdapt** algorithm in MnasNet and mini
 > 1. Starts with a seed network architecture found by platform-aware NAS.
 >
 > 2. For each step:
-> (a) Generate a set of new *proposals*. Each proposal represents a modification of an architecture that generates at least  $\delta=0.01|L|$($L$ is the latency of the seed model) reduction in latency compared to the previous step.
 >
-> (b) For each proposal we use the pre-trained model from the previous step and populate the new proposed architecture, truncating and randomly initializing missing weights as appropriate. Finetune each proposal for $T=1000$ steps to get a coarse estimate of the accuracy.
+>   (a) Generate a set of new *proposals*. Each proposal represents a modification of an architecture that generates at least  $\delta=0.01|L|$($L$ is the latency of the seed model) reduction in latency compared to the previous step.
 >
-> (c) Selected best proposal according to some metric.
+>   (b) For each proposal we use the pre-trained model from the previous step and populate the new proposed architecture, truncating and randomly initializing missing weights as appropriate. Finetune each proposal for $T=1000$ steps to get a coarse estimate of the accuracy.
+>
+>   (c) Selected best proposal according to some metric.
 >
 > 3. Iterate previous steps until target latency is reached.
 
